@@ -8,8 +8,7 @@ def render_mean_and_SD():
     # =========================
     # 页面设置
     # =========================
-    st.set_page_config(page_title="Score Visualization Tool", layout="centered")
-    st.title("📊 Score Visualization Tool")
+    st.title("📊 平均值+标准差")
     st.write("Only support English: make sure all input are in English")
     
     # =========================

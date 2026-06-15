@@ -190,7 +190,7 @@ def render_interaction():
     # Plot Settings
     # =====================
 
-    st.header("Plot Settings")
+    st.header("设置图表标题")
 
     factors = [
         factor1_name,
@@ -198,7 +198,7 @@ def render_interaction():
     ]
 
     x_factor = st.selectbox(
-        "X Axis Factor",
+        "X 轴因素",
         factors
     )
 
@@ -210,12 +210,12 @@ def render_interaction():
     line_factor = remaining[0]
 
     plot_title = st.text_input(
-        "Plot Title",
+        "标题",
         "Interaction Plot"
     )
 
     y_label = st.text_input(
-        "Y Axis Label",
+        "Y轴标题",
         "Score"
     )
 
@@ -223,7 +223,7 @@ def render_interaction():
     # Images
     # =====================
     
-    st.header("Condition Images")
+    st.header("是否需要配图")
     
     # X轴水平对应的条件
     if x_factor == factor1_name:

@@ -10,12 +10,12 @@ def main():
 
     page = st.sidebar.radio(
         "选择模块",
-        ["平均分+标准差","夹持力客观主观","交互折现"]
+        ["平均分+标准差","夹持力客观主观","交互折线"]
     )
 
     if page == "平均分+标准差":
         render_mean_and_SD()
-    else if  page == "交互折现":
+    if  page == "交互折线":
         render_interaction()
         
 if __name__ == "__main__":

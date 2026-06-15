@@ -223,20 +223,29 @@ def render_interaction():
 
     st.header("Condition Images")
 
+    use_images = st.radio(
+        "Do you want to add images under X-axis conditions?",
+        ["No", "Yes"],
+        horizontal=True
+    )
+
     image_dict = {}
 
-    if x_factor == factor1_name:
-        x_levels = factor1_levels
-    else:
-        x_levels = factor2_levels
-
-    for level in x_levels:
-
-        image_dict[level] = st.file_uploader(
-            f"{level}",
-            type=["png","jpg","jpeg"],
-            key=f"img_{level}"
-        )
+    if use_images == "Yes":
+        
+        
+        if x_factor == factor1_name:
+            x_levels = factor1_levels
+        else:
+            x_levels = factor2_levels
+    
+        for level in x_levels:
+    
+            image_dict[level] = st.file_uploader(
+                f"{level}",
+                type=["png","jpg","jpeg"],
+                key=f"img_{level}"
+            )
 
     # =====================
     # Generate

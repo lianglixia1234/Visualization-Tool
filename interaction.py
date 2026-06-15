@@ -384,18 +384,25 @@ def render_interaction():
                     img,
                     zoom=0.18
                 )
-
-                ab = AnnotationBbox(
-                    imagebox,
-                    (i, scale_min),
-                    frameon=False,
-                    xybox=(0,-55),
-                    boxcoords="offset points"
+               
+                ax.set_xticks(np.arange(len(x_levels)))
+                ax.set_xticklabels(
+                    x_levels,
+                    fontsize=11
                 )
+
+                plt.subplots_adjust(bottom=0.35)
+                ab = AnnotationBbox(
+                imagebox,
+                (i, scale_min),
+                frameon=False,
+                xybox=(0, -120),
+                boxcoords="offset points"
+            )
 
                 ax.add_artist(ab)
 
-        plt.tight_layout()
+
 
         st.pyplot(fig)
 

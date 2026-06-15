@@ -9,30 +9,7 @@ from scipy.stats import t
 from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 from PIL import Image
 
-TARGET_SIZE = (120, 120)
 
-img = Image.open(uploaded_img).convert("RGBA")
-
-# 等比例缩放
-img.thumbnail(TARGET_SIZE)
-
-# 创建统一画布
-canvas = Image.new(
-    "RGBA",
-    TARGET_SIZE,
-    (255, 255, 255, 0)
-)
-
-# 居中放置
-x = (TARGET_SIZE[0] - img.width) // 2
-y = (TARGET_SIZE[1] - img.height) // 2
-
-canvas.paste(img, (x, y), img)
-
-imagebox = OffsetImage(
-    canvas,
-    zoom=1
-)
 
 # =====================
 # 中文字体
@@ -242,35 +219,46 @@ def render_interaction():
         "Score"
     )
 
-    # =====================
+    # ====================
     # Images
     # =====================
-
+    
     st.header("Condition Images")
-
+    
+    # X轴水平对应的条件
+    if x_factor == factor1_name:
+        x_levels = factor1_levels
+    else:
+        x_levels = factor2_levels
+    
     use_images = st.radio(
         "Do you want to add images under X-axis conditions?",
         ["No", "Yes"],
         horizontal=True
     )
-
+    
     image_dict = {}
-
+    
     if use_images == "Yes":
-        
-        
-        if x_factor == factor1_name:
-            x_levels = factor1_levels
-        else:
-            x_levels = factor2_levels
+    
+        image_size = st.slider(
+            "Image Size",
+            min_value=60,
+            max_value=180,
+            value=120,
+            step=10
+        )
+    
+        st.info("Upload one image for each X-axis condition")
     
         for level in x_levels:
     
             image_dict[level] = st.file_uploader(
                 f"{level}",
-                type=["png","jpg","jpeg"],
+                type=["png", "jpg", "jpeg"],
                 key=f"img_{level}"
             )
+    
 
     # =====================
     # Generate
@@ -393,39 +381,76 @@ def render_interaction():
             title=line_factor
         )
 
+
+
         # =====================
         # 图片
         # =====================
-
-        for i, level in enumerate(x_levels):
-
-            uploaded_img = image_dict[level]
-
-            if uploaded_img:
-
-                img = Image.open(uploaded_img)
-
-                imagebox = OffsetImage(
-                    img,
-                    zoom=0.18
-                )
-               
-                ax.set_xticks(np.arange(len(x_levels)))
-                ax.set_xticklabels(
-                    x_levels,
-                    fontsize=11
-                )
-
-                plt.subplots_adjust(bottom=0.35)
-                ab = AnnotationBbox(
-                imagebox,
-                (i, scale_min),
-                frameon=False,
-                xybox=(0, -120),
-                boxcoords="offset points"
+        
+        if use_images == "Yes":
+        
+            plt.subplots_adjust(
+                bottom=0.35,
+                left=0.08,
+                right=0.97,
+                top=0.90
             )
-
-                ax.add_artist(ab)
+        
+            for i, level in enumerate(x_levels):
+        
+                uploaded_img = image_dict.get(level)
+        
+                if uploaded_img:
+        
+                    TARGET_SIZE = (
+                        image_size,
+                        image_size
+                    )
+        
+                    img = Image.open(
+                        uploaded_img
+                    ).convert("RGBA")
+        
+                    img.thumbnail(TARGET_SIZE)
+        
+                    canvas = Image.new(
+                        "RGBA",
+                        TARGET_SIZE,
+                        (255, 255, 255, 0)
+                    )
+        
+                    x_offset = (
+                        TARGET_SIZE[0] - img.width
+                    ) // 2
+        
+                    y_offset = (
+                        TARGET_SIZE[1] - img.height
+                    ) // 2
+        
+                    canvas.paste(
+                        img,
+                        (x_offset, y_offset),
+                        img
+                    )
+        
+                    imagebox = OffsetImage(
+                        canvas,
+                        zoom=1
+                    )
+        
+                    ab = AnnotationBbox(
+                        imagebox,
+                        (i, scale_min),
+                        frameon=False,
+                        xybox=(0, -120),
+                        boxcoords="offset points"
+                    )
+        
+                    ax.add_artist(ab)
+        
+        else:
+        
+            plt.tight_layout()
 
 
 

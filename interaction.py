@@ -11,13 +11,17 @@ from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 
 def render_interaction():
 
-    st.title("📊 交互折线")
+    st.title("📊 交互折线(2因素）")
 
     # ==================================================
     # Upload Excel
     # ==================================================
 
     uploaded_file = st.file_uploader("📁 上传 Excel 文件", type=["xlsx"])
+
+    if uploaded_file is None:
+        st.info("请先上传Excel文件")
+        return
 
     df = pd.read_excel(uploaded_file)
 
@@ -33,12 +37,14 @@ def render_interaction():
 
     st.header("Factor Settings")
 
-    num_factors = st.number_input(
-        "Number of Factors",
-        min_value=2,
-        max_value=3,
-        value=2,
-        step=1
+    num_factors = int(
+        st.number_input(
+            "Number of Factors",
+            min_value=2,
+            max_value=2,
+            value=2,
+            step=1
+        )
     )
 
     factor_names = []
@@ -264,6 +270,9 @@ def render_interaction():
                 continue
 
             img = Image.open(img_file)
+
+            # 图片大小
+            img.thumbnail((600,600))
 
             imagebox = OffsetImage(
                 np.array(img),

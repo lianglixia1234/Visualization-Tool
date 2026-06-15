@@ -17,14 +17,7 @@ def render_interaction():
     # Upload Excel
     # ==================================================
 
-    uploaded_file = st.file_uploader(
-        "Upload Excel File",
-        type=["xlsx"]
-    )
-
-    if uploaded_file is None:
-        st.info("请上传数据")
-        return
+    uploaded_file = st.file_uploader("📁 上传 Excel 文件", type=["xlsx"])
 
     df = pd.read_excel(uploaded_file)
 

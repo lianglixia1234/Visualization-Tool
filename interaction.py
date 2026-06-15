@@ -5,6 +5,9 @@ import matplotlib.pyplot as plt
 import itertools
 import io
 
+from PIL import Image
+from matplotlib.offsetbox import OffsetImage, AnnotationBbox
+
 def render_interaction():
 
     st.title("📊 交互折线（2因素）")
@@ -24,8 +27,6 @@ def render_interaction():
     except Exception as e:
         st.error(f"读取 Excel 失败：{e}")
         return
-
-    st.dataframe(df.head())
 
     st.subheader("Preview")
 
@@ -86,6 +87,8 @@ def render_interaction():
 
         factor_levels[factor_name] = levels
 
+
+    
     # ==================================================
     # Generate Combinations
     # ==================================================
@@ -113,6 +116,9 @@ def render_interaction():
             key=f"map_{combo_name}"
         )
 
+
+    
+    
     # ==================================================
     # X Axis / Line Factor
     # ==================================================
@@ -133,6 +139,12 @@ def render_interaction():
         ]
     )
 
+    selected_cols = list(mapping.values())
+
+    if len(selected_cols) != len(set(selected_cols)):
+        st.error("存在重复映射的Excel列")
+        return
+        
     # ==================================================
     # Images
     # ==================================================

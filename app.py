@@ -3,6 +3,7 @@ from data_cleaning import render_data_cleaning
 
 st.set_page_config(layout="wide")
 
+
 def main():
     st.sidebar.title("导航")
 
@@ -12,8 +13,8 @@ def main():
         ["夹持力客观主观"]
     )
 
-    if page == "数据清洗":
-        render_data_cleaning()
+    if page == "平均分+标准差":
+        render_mean_and_SD()
 
 if __name__ == "__main__":
     main()

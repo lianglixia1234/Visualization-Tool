@@ -6,8 +6,33 @@ import itertools
 import io
 
 from scipy.stats import t
-from PIL import Image
 from matplotlib.offsetbox import OffsetImage, AnnotationBbox
+from PIL import Image
+
+TARGET_SIZE = (120, 120)
+
+img = Image.open(uploaded_img).convert("RGBA")
+
+# 等比例缩放
+img.thumbnail(TARGET_SIZE)
+
+# 创建统一画布
+canvas = Image.new(
+    "RGBA",
+    TARGET_SIZE,
+    (255, 255, 255, 0)
+)
+
+# 居中放置
+x = (TARGET_SIZE[0] - img.width) // 2
+y = (TARGET_SIZE[1] - img.height) // 2
+
+canvas.paste(img, (x, y), img)
+
+imagebox = OffsetImage(
+    canvas,
+    zoom=1
+)
 
 # =====================
 # 中文字体

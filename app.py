@@ -15,7 +15,7 @@ def main():
 
     if page == "平均分+标准差":
         render_mean_and_SD()
-    if  page == "交互折线":
+    elif  page == "交互折线":
         render_interaction()
         
 if __name__ == "__main__":

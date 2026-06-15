@@ -5,322 +5,438 @@ import matplotlib.pyplot as plt
 import itertools
 import io
 
+from scipy.stats import t
 from PIL import Image
 from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 
+# =====================
+# 中文字体
+# =====================
+plt.rcParams["font.sans-serif"] = [
+    "Microsoft YaHei",
+    "SimHei",
+    "Arial Unicode MS"
+]
+plt.rcParams["axes.unicode_minus"] = False
+
+# =====================
+# 统计函数
+# =====================
+def calc_stats(values):
+
+    values = pd.to_numeric(values, errors="coerce").dropna()
+
+    n = len(values)
+
+    if n == 0:
+        return {
+            "n":0,
+            "mean":np.nan,
+            "sd":np.nan,
+            "se":np.nan,
+            "ci_lower":np.nan,
+            "ci_upper":np.nan
+        }
+
+    mean = values.mean()
+
+    if n > 1:
+        sd = values.std(ddof=1)
+        se = sd / np.sqrt(n)
+
+        t_value = t.ppf(
+            0.975,
+            df=n-1
+        )
+
+        ci = t_value * se
+
+    else:
+        sd = 0
+        se = 0
+        ci = 0
+
+    return {
+        "n": n,
+        "mean": mean,
+        "sd": sd,
+        "se": se,
+        "ci_lower": mean - ci,
+        "ci_upper": mean + ci
+    }
+
+
+# =====================
+# 主函数
+# =====================
 def render_interaction():
 
-    st.title("📊 交互折线（2因素）")
+    st.title("📈 Interaction Plot Tool")
 
     uploaded_file = st.file_uploader(
-        "📁 上传 Excel 文件",
+        "Upload Excel",
         type=["xlsx"]
     )
 
     if uploaded_file is None:
-        st.warning("请先上传 Excel 文件")
+        st.info("Please upload Excel file")
         return
 
-    try:
-        df = pd.read_excel(uploaded_file)
+    df = pd.read_excel(uploaded_file)
 
-    except Exception as e:
-        st.error(f"读取 Excel 失败：{e}")
-        return
+    st.success("Excel Loaded")
 
-    st.subheader("Preview")
+    # =====================
+    # Analysis Settings
+    # =====================
 
-    st.dataframe(df.head())
+    st.header("Analysis Settings")
 
-    excel_cols = df.columns.tolist()
+    col1, col2 = st.columns(2)
 
-    # ==================================================
+    with col1:
+        scale_min = st.number_input(
+            "Scale Minimum",
+            value=1.0
+        )
+
+    with col2:
+        scale_max = st.number_input(
+            "Scale Maximum",
+            value=7.0
+        )
+
+    error_type = st.selectbox(
+        "Error Bar",
+        [
+            "95% CI",
+            "SEM",
+            "SD"
+        ]
+    )
+
+    # =====================
     # Factor Settings
-    # ==================================================
+    # =====================
 
     st.header("Factor Settings")
 
-    num_factors = int(
-        st.number_input(
-            "Number of Factors",
-            min_value=2,
-            max_value=2,
-            value=2,
-            step=1
-        )
+    factor1_name = st.text_input(
+        "Factor 1 Name",
+        "Factor A"
     )
 
-    factor_names = []
-    factor_levels = {}
+    factor1_levels = st.text_input(
+        "Factor 1 Levels (comma separated)",
+        "A1,A2"
+    )
 
-    for i in range(num_factors):
+    factor2_name = st.text_input(
+        "Factor 2 Name",
+        "Factor B"
+    )
 
-        st.markdown(f"### Factor {i+1}")
+    factor2_levels = st.text_input(
+        "Factor 2 Levels (comma separated)",
+        "B1,B2"
+    )
 
-        factor_name = st.text_input(
-            f"Factor {i+1} Name",
-            value=f"Factor{i+1}",
-            key=f"factor_name_{i}"
-        )
+    factor1_levels = [
+        x.strip()
+        for x in factor1_levels.split(",")
+    ]
 
-        factor_names.append(factor_name)
-
-        n_levels = st.number_input(
-            f"Number of Conditions for {factor_name}",
-            min_value=2,
-            max_value=10,
-            value=2,
-            key=f"n_levels_{i}"
-        )
-
-        levels = []
-
-        for j in range(n_levels):
-
-            level = st.text_input(
-                f"{factor_name} Condition {j+1}",
-                value=f"{factor_name}_{j+1}",
-                key=f"level_{i}_{j}"
-            )
-
-            levels.append(level)
-
-        factor_levels[factor_name] = levels
-
-
-    
-    # ==================================================
-    # Generate Combinations
-    # ==================================================
-
-    st.header("Column Mapping")
+    factor2_levels = [
+        x.strip()
+        for x in factor2_levels.split(",")
+    ]
 
     combinations = list(
         itertools.product(
-            *[
-                factor_levels[f]
-                for f in factor_names
-            ]
+            factor1_levels,
+            factor2_levels
         )
     )
+
+    # =====================
+    # Mapping
+    # =====================
+
+    st.header("Column Mapping")
 
     mapping = {}
 
+    cols = df.columns.tolist()
+
     for combo in combinations:
 
-        combo_name = " × ".join(combo)
+        key = f"{combo[0]} × {combo[1]}"
 
-        mapping[combo] = st.selectbox(
-            f"{combo_name}",
-            excel_cols,
-            key=f"map_{combo_name}"
+        mapping[key] = st.selectbox(
+            key,
+            cols,
+            key=key
         )
-
-
-    
-    
-    # ==================================================
-    # X Axis / Line Factor
-    # ==================================================
-
-    st.header("Plot Settings")
-
-    x_factor = st.selectbox(
-        "X Axis Factor",
-        factor_names
-    )
-
-    line_factor = st.selectbox(
-        "Line Factor",
-        [
-            f
-            for f in factor_names
-            if f != x_factor
-        ]
-    )
 
     selected_cols = list(mapping.values())
 
     if len(selected_cols) != len(set(selected_cols)):
-        st.error("存在重复映射的Excel列")
+        st.error("存在重复映射，请检查")
         return
-        
-    # ==================================================
+
+    # =====================
+    # Plot Settings
+    # =====================
+
+    st.header("Plot Settings")
+
+    factors = [
+        factor1_name,
+        factor2_name
+    ]
+
+    x_factor = st.selectbox(
+        "X Axis Factor",
+        factors
+    )
+
+    remaining = [
+        f for f in factors
+        if f != x_factor
+    ]
+
+    line_factor = remaining[0]
+
+    plot_title = st.text_input(
+        "Plot Title",
+        "Interaction Plot"
+    )
+
+    y_label = st.text_input(
+        "Y Axis Label",
+        "Score"
+    )
+
+    # =====================
     # Images
-    # ==================================================
+    # =====================
 
     st.header("Condition Images")
 
     image_dict = {}
 
-    for level in factor_levels[x_factor]:
+    if x_factor == factor1_name:
+        x_levels = factor1_levels
+    else:
+        x_levels = factor2_levels
+
+    for level in x_levels:
 
         image_dict[level] = st.file_uploader(
-            f"Image for {level}",
-            type=["png", "jpg", "jpeg"],
+            f"{level}",
+            type=["png","jpg","jpeg"],
             key=f"img_{level}"
         )
 
-    # ==================================================
-    # Generate Plot
-    # ==================================================
+    # =====================
+    # Generate
+    # =====================
 
     if st.button("Generate Plot"):
 
-        summary_rows = []
+        stat_rows = []
 
-        for combo, col in mapping.items():
+        if x_factor == factor1_name:
 
-            mean_val = df[col].mean()
+            line_levels = factor2_levels
 
-            sd_val = df[col].std()
+            for line in line_levels:
 
-            row = {}
+                for x in factor1_levels:
 
-            for i, factor in enumerate(factor_names):
+                    col_name = mapping[f"{x} × {line}"]
 
-                row[factor] = combo[i]
+                    stats = calc_stats(df[col_name])
 
-            row["Mean"] = mean_val
-            row["SD"] = sd_val
+                    stats["line_group"] = line
+                    stats["x_group"] = x
 
-            summary_rows.append(row)
+                    stat_rows.append(stats)
 
-        summary_df = pd.DataFrame(summary_rows)
+        else:
 
-        st.subheader("Summary")
+            line_levels = factor1_levels
 
-        st.dataframe(summary_df)
+            for line in line_levels:
 
-        # ==============================================
+                for x in factor2_levels:
+
+                    col_name = mapping[f"{line} × {x}"]
+
+                    stats = calc_stats(df[col_name])
+
+                    stats["line_group"] = line
+                    stats["x_group"] = x
+
+                    stat_rows.append(stats)
+
+        stat_df = pd.DataFrame(stat_rows)
+
+        # =====================
         # Plot
-        # ==============================================
+        # =====================
 
         fig, ax = plt.subplots(
-            figsize=(14, 8)
+            figsize=(12,6.75)
         )
 
-        x_levels = factor_levels[x_factor]
+        for line in line_levels:
 
-        line_levels = factor_levels[line_factor]
-
-        x_pos = np.arange(len(x_levels))
-
-        for line_level in line_levels:
-
-            plot_df = summary_df[
-                summary_df[line_factor]
-                == line_level
+            subset = stat_df[
+                stat_df["line_group"] == line
             ]
 
-            plot_df = (
-                plot_df
-                .set_index(x_factor)
-                .reindex(x_levels)
-            )
+            y = subset["mean"].values
 
-            means = plot_df["Mean"]
+            if error_type == "95% CI":
 
-            sds = plot_df["SD"]
+                err = (
+                    subset["ci_upper"] -
+                    subset["mean"]
+                ).values
+
+            elif error_type == "SEM":
+
+                err = subset["se"].values
+
+            else:
+
+                err = subset["sd"].values
+
+            x = np.arange(len(x_levels))
 
             ax.errorbar(
-                x_pos,
-                means,
-                yerr=sds,
+                x,
+                y,
+                yerr=err,
                 marker="o",
                 capsize=5,
                 linewidth=2,
-                label=line_level
+                label=line
             )
 
-            for x, y in zip(x_pos, means):
+            for xi, yi in zip(x, y):
 
                 ax.text(
-                    x,
-                    y + 0.1,
-                    f"{y:.2f}",
+                    xi,
+                    yi,
+                    f"{yi:.2f}",
                     ha="center",
-                    fontsize=9
+                    va="bottom"
                 )
 
-        ax.set_xticks(x_pos)
-
-        ax.set_xticklabels(
-            x_levels,
-            rotation=15
+        ax.set_xticks(
+            np.arange(len(x_levels))
         )
 
-        ax.set_ylabel("Mean Score")
+        ax.set_xticklabels(x_levels)
 
-        ax.set_title(
-            f"{line_factor} × {x_factor} Interaction Plot"
+        ax.set_ylim(
+            scale_min,
+            scale_max
         )
 
-        ax.legend()
+        ax.set_title(plot_title)
+
+        ax.set_ylabel(y_label)
 
         ax.grid(
             axis="y",
             alpha=0.3
         )
 
-        # ==============================================
-        # Images
-        # ==============================================
-
-        ymin, ymax = ax.get_ylim()
-
-        image_y = ymin - (ymax - ymin) * 0.30
-
-        ax.set_ylim(
-            image_y,
-            ymax
+        ax.legend(
+            title=line_factor
         )
+
+        # =====================
+        # 图片
+        # =====================
 
         for i, level in enumerate(x_levels):
 
-            img_file = image_dict.get(level)
+            uploaded_img = image_dict[level]
 
-            if img_file is None:
-                continue
+            if uploaded_img:
 
-            img = Image.open(img_file)
+                img = Image.open(uploaded_img)
 
-            # 图片大小
-            img.thumbnail((600,600))
+                imagebox = OffsetImage(
+                    img,
+                    zoom=0.18
+                )
 
-            imagebox = OffsetImage(
-                np.array(img),
-                zoom=0.15
-            )
+                ab = AnnotationBbox(
+                    imagebox,
+                    (i, scale_min),
+                    frameon=False,
+                    xybox=(0,-55),
+                    boxcoords="offset points"
+                )
 
-            ab = AnnotationBbox(
-                imagebox,
-                (i, image_y),
-                frameon=False,
-                box_alignment=(0.5, 1)
-            )
-
-            ax.add_artist(ab)
+                ax.add_artist(ab)
 
         plt.tight_layout()
 
         st.pyplot(fig)
 
-        # ==============================================
-        # Download
-        # ==============================================
+        # =====================
+        # PNG下载
+        # =====================
 
-        buffer = io.BytesIO()
+        png_buffer = io.BytesIO()
 
         fig.savefig(
-            buffer,
+            png_buffer,
             dpi=300,
             bbox_inches="tight"
         )
 
         st.download_button(
-            label="📥 Download PNG",
-            data=buffer.getvalue(),
+            "Download PNG",
+            png_buffer.getvalue(),
             file_name="interaction_plot.png",
             mime="image/png"
+        )
+
+        # =====================
+        # Statistics Table
+        # =====================
+
+        st.subheader("Statistics")
+
+        show_cols = [
+            "line_group",
+            "x_group",
+            "n",
+            "mean",
+            "sd",
+            "se",
+            "ci_lower",
+            "ci_upper"
+        ]
+
+        st.dataframe(
+            stat_df[show_cols]
+        )
+
+        csv = stat_df.to_csv(
+            index=False
+        ).encode("utf-8-sig")
+
+        st.download_button(
+            "Download Statistics CSV",
+            csv,
+            file_name="statistics.csv",
+            mime="text/csv"
         )

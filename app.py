@@ -1,5 +1,5 @@
 import streamlit as st
-from data_cleaning import render_data_cleaning
+from mean_and_SD import render_mean_and_SD
 
 st.set_page_config(layout="wide")
 

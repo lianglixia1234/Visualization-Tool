@@ -5,25 +5,27 @@ import matplotlib.pyplot as plt
 import itertools
 import io
 
-from PIL import Image
-from matplotlib.offsetbox import OffsetImage, AnnotationBbox
-
-
 def render_interaction():
 
-    st.title("📊 交互折线(2因素）")
+    st.title("📊 交互折线（2因素）")
 
-    # ==================================================
-    # Upload Excel
-    # ==================================================
-
-    uploaded_file = st.file_uploader("📁 上传 Excel 文件", type=["xlsx"])
+    uploaded_file = st.file_uploader(
+        "📁 上传 Excel 文件",
+        type=["xlsx"]
+    )
 
     if uploaded_file is None:
-        st.info("请先上传Excel文件")
+        st.warning("请先上传 Excel 文件")
         return
 
-    df = pd.read_excel(uploaded_file)
+    try:
+        df = pd.read_excel(uploaded_file)
+
+    except Exception as e:
+        st.error(f"读取 Excel 失败：{e}")
+        return
+
+    st.dataframe(df.head())
 
     st.subheader("Preview")
 

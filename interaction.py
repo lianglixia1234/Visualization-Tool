@@ -92,7 +92,7 @@ def render_interaction():
     # Analysis Settings
     # =====================
 
-    st.header("Analysis Settings")
+    st.header("设置评分范围")
 
     col1, col2 = st.columns(2)
 
@@ -111,8 +111,8 @@ def render_interaction():
     error_type = st.selectbox(
         "Error Bar",
         [
-            "95% CI",
             "SEM",
+            "95% CI",
             "SD"
         ]
     )
@@ -121,7 +121,7 @@ def render_interaction():
     # Factor Settings
     # =====================
 
-    st.header("Factor Settings")
+    st.header("设置因素和条件")
 
     factor1_name = st.text_input(
         "Factor 1 Name",
@@ -164,7 +164,7 @@ def render_interaction():
     # Mapping
     # =====================
 
-    st.header("Column Mapping")
+    st.header("选择每个条件对应的列")
 
     mapping = {}
 
@@ -183,7 +183,7 @@ def render_interaction():
     selected_cols = list(mapping.values())
 
     if len(selected_cols) != len(set(selected_cols)):
-        st.error("存在重复映射，请检查")
+        st.error("存在重复，请检查")
         return
 
     # =====================
@@ -264,7 +264,7 @@ def render_interaction():
     # Generate
     # =====================
 
-    if st.button("Generate Plot"):
+    if st.button("画图"):
 
         stat_rows = []
 

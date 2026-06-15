@@ -73,7 +73,7 @@ def calc_stats(values):
 # =====================
 def render_interaction():
 
-    st.title("📈 Interaction Plot Tool")
+    st.title("📈 交互折线")
 
     uploaded_file = st.file_uploader(
         "Upload Excel",

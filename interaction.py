@@ -11,7 +11,7 @@ from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 
 def render_interaction():
 
-  st.title("📊 交互折线")
+    st.title("📊 交互折线")
 
     # ==================================================
     # Upload Excel

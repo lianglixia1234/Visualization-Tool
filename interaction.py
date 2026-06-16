@@ -374,7 +374,7 @@ def render_interaction():
 
         ax.grid(
             axis="y",
-            alpha=0.1
+            alpha=0.3
         )
 
         ax.legend(
@@ -442,7 +442,7 @@ def render_interaction():
                         imagebox,
                         (i, scale_min),
                         frameon=False,
-                        xybox=(0, -120),
+                        xybox=(0, -80),
                         boxcoords="offset points"
                     )
         

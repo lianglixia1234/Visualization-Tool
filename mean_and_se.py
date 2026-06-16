@@ -8,7 +8,7 @@ import io
 from PIL import Image
 from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 
-def render_mean_and_SD():
+def render_mean_and_se():
     # =========================
     # 页面设置
     # =========================

@@ -105,6 +105,7 @@ def render_mean_and_SD():
     
         means = df_numeric.mean()
         sds = df_numeric.std()
+        ses = df_numeric.sem()   # 标准误
         maxs = df_numeric.max()
         mins = df_numeric.min()
     
@@ -126,7 +127,7 @@ def render_mean_and_SD():
         ax.bar(
             x,
             means,
-            yerr=sds,
+            yerr=ses,
             width=0.3,
             capsize=8,
             color=colors,

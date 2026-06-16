@@ -1,5 +1,5 @@
 import streamlit as st
-from mean_and_SD import render_mean_and_SD
+from mean_and_se import render_mean_and_se
 from interaction import render_interaction
 
 st.set_page_config(layout="wide")

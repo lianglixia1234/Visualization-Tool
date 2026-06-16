@@ -374,7 +374,7 @@ def render_interaction():
 
         ax.grid(
             axis="y",
-            alpha=0.3
+            alpha=0.1
         )
 
         ax.legend(
@@ -390,10 +390,10 @@ def render_interaction():
         if use_images == "Yes":
         
             plt.subplots_adjust(
-                bottom=0.15,
+                bottom=0.35,
                 left=0.08,
                 right=0.97,
-                top=1
+                top=0.9
             )
         
             for i, level in enumerate(x_levels):

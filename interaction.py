@@ -393,7 +393,7 @@ def render_interaction():
                 bottom=0.35,
                 left=0.08,
                 right=0.97,
-                top=0.90
+                top=0.40
             )
         
             for i, level in enumerate(x_levels):

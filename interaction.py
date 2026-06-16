@@ -390,10 +390,10 @@ def render_interaction():
         if use_images == "Yes":
         
             plt.subplots_adjust(
-                bottom=0.35,
+                bottom=0.15,
                 left=0.08,
                 right=0.97,
-                top=0.40
+                top=1
             )
         
             for i, level in enumerate(x_levels):
